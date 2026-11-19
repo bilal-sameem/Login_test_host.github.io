@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign up / Log in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #3a5b22;      /* button fill + border */
+    --muted: #d9d9d9;      /* input border, placeholder, divider */
+    --link: #0f3dde;       /* "Sign Up" / "Sign In" */
+    --link-alt: #0c2a92;   /* "forgot password" */
+    --photo-w: 45px;       /* photo corner radius */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-weight: 500;
+    color: #000;
+    background: #fff;
+    line-height: 1.5;
+  }
+
+  /* ---------- screen switching (#login shows Log in, anything else shows Sign up) ---------- */
+  .screen { display: none; min-height: 100vh; grid-template-columns: 1fr 1fr; }
+  .screen--signup { display: grid; }
+  :root:has(#login:target) .screen--signup { display: none; }
+  :root:has(#login:target) .screen--login  { display: grid; }
+
+  /* ---------- left column ---------- */
+  .pane {
+    padding: var(--top) 24px 48px clamp(32px, calc(20% + 21.4px), 240px);
+  }
+  .pane--signup { --top: max(48px, 19.4vh); }
+  .pane--login  { --top: max(48px, 22vh); }
+  .form { width: min(404px, 100%); }
+
+  h1 { margin: 0; font-size: 32px; font-weight: 500; line-height: 48px; }
+  .sub { margin: 5px 0 0; font-size: 16px; line-height: 24px; }
+  .fields { margin-top: 62px; }
+
+  .field { margin-bottom: 26px; }
+  .label-row { display: flex; justify-content: space-between; align-items: baseline; }
+  label.lbl { display: block; font-size: 14px; line-height: 20px; }
+  .forgot { font-size: 10px; color: var(--link-alt); text-decoration: none; margin-right: 4px; }
+  .forgot:hover { text-decoration: underline; }
+
+  input[type="text"], input[type="email"], input[type="password"] {
+    display: block; width: 100%; height: 32px;
+    padding: 0 10px;
+    font: inherit; font-size: 12px; color: #000;
+    background: #fff;
+    border: 1px solid var(--muted);
+    border-radius: 10px;
+  }
+  input::placeholder { font-size: 10px; color: var(--muted); opacity: 1; }
+  input:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green); }
+
+  .check { display: flex; align-items: center; gap: 6px; font-size: 9px; line-height: 15px; cursor: pointer; width: fit-content; }
+  .check input {
+    appearance: none; -webkit-appearance: none;
+    width: 9px; height: 10px; margin: 0; flex: none;
+    border: 1px solid #000; border-radius: 2px; background: #fff;
+  }
+  .check input:checked { background: #000; }
+  .check input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .check a { color: inherit; text-decoration: underline; }
+
+  .btn {
+    display: block; width: 100%; height: 32px; margin-top: var(--btn-gap, 20px);
+    font: 700 13px "Poppins", system-ui, sans-serif; color: #fff;
+    background: var(--green); border: 1px solid var(--green); border-radius: 10px;
+    cursor: pointer;
+  }
+  .btn:hover { filter: brightness(1.12); }
+  .btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+  .or {
+    display: flex; align-items: center; height: 14px;
+    width: min(400px, 100%);
+    margin-top: var(--or-gap, 38px);
+    font-size: 9px; line-height: 14px;
+  }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--muted); }
+  .or span { padding: 0 3px; }
+
+  .switch { margin: 85px 0 0; text-align: center; font-size: 14px; }
+  .switch a { margin-left: 6px; color: var(--link); text-decoration: none; }
+  .switch a:hover { text-decoration: underline; }
+
+  .pane--signup .btn { --btn-gap: 30px; }
+  .pane--signup .or  { --or-gap: 62px; margin-left: 3px; }
+
+  /* ---------- photo column ---------- */
+  .photo { position: relative; }
+  .photo img {
+    position: absolute; left: 0; right: 0; top: 2px; bottom: 0;
+    width: 100%; height: calc(100% - 2px);
+    object-fit: cover;
+    border-radius: var(--photo-w) 0 0 var(--photo-w);
+    background: linear-gradient(160deg, #dfe8d6 0%, #6f9a4c 45%, #2d4a1b 100%); /* shows until plant.png is added */
+  }
+  /* Log in has a second copy of the photo peeking out 14px to the left and 2px above */
+  .photo__back { left: -14px !important; right: 0; top: 0 !important; height: 100% !important; }
+
+  /* ---------- tablet / phone ---------- */
+  @media (max-width: 899px) {
+    .screen, .screen--signup { grid-template-columns: 1fr; }
+    .photo { order: -1; height: 180px; }
+    .photo img { top: 0; height: 100%; border-radius: 0 0 28px 28px; }
+    .photo__back { display: none; }
+    .pane { padding: 32px 24px 48px; display: flex; justify-content: center; }
+    .switch { margin-top: 40px; }
+  }
+  @media (max-width: 600px) {
+    input[type="text"], input[type="email"], input[type="password"] { font-size: 16px; } /* stops iOS zoom-on-focus */
+    h1 { font-size: 28px; line-height: 42px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== SIGN UP (Figma 1:83) ===================== -->
+<main class="screen screen--signup" id="signup">
+  <section class="pane pane--signup">
+    <form class="form" data-demo>
+      <h1>Get Started Now</h1>
+      <div class="fields">
+        <div class="field">
+          <label class="lbl" for="su-name">Name</label>
+          <input id="su-name" type="text" placeholder="Enter your name" autocomplete="name">
+        </div>
+        <div class="field">
+          <label class="lbl" for="su-email">Email address</label>
+          <input id="su-email" type="email" placeholder="Enter your email" autocomplete="email">
+        </div>
+        <div class="field">
+          <label class="lbl" for="su-pass">Password</label>
+          <input id="su-pass" type="password" placeholder="Enter your password" autocomplete="new-password">
+        </div>
+      </div>
+      <label class="check"><input type="checkbox"><span>I agree to the <a href="#signup">terms &amp; policy</a></span></label>
+      <button class="btn" type="submit">Signup</button>
+      <div class="or"><span>Or</span></div>
+      <p class="switch">Have an account? <a href="#login">Sign In</a></p>
+    </form>
+  </section>
+  <aside class="photo"><img src="plant.png" alt=""></aside>
+</main>
+
+<!-- ===================== LOG IN (Figma 1:125) ===================== -->
+<main class="screen screen--login" id="login">
+  <section class="pane pane--login">
+    <form class="form" data-demo>
+      <h1>Welcome back!</h1>
+      <p class="sub">Enter your Credentials to access your account</p>
+      <div class="fields">
+        <div class="field">
+          <label class="lbl" for="li-email">Email address</label>
+          <input id="li-email" type="email" placeholder="Enter your email" autocomplete="email">
+        </div>
+        <div class="field">
+          <div class="label-row">
+            <label class="lbl" for="li-pass">Password</label>
+            <a class="forgot" href="#login">forgot password</a>
+          </div>
+          <input id="li-pass" type="password" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+      </div>
+      <label class="check"><input type="checkbox"><span>Remember for 30 days</span></label>
+      <button class="btn" type="submit">Login</button>
+      <div class="or"><span>Or</span></div>
+      <p class="switch">Don’t have an account? <a href="#signup">Sign Up</a></p>
+    </form>
+  </section>
+  <aside class="photo">
+    <img class="photo__back" src="plant.png" alt="">
+    <img src="plant.png" alt="">
+  </aside>
+</main>
+
+<script>
+  // Demo only: no backend, so keep the page from reloading on submit.
+  document.querySelectorAll('form[data-demo]').forEach(f =>
+    f.addEventListener('submit', e => e.preventDefault()));
+</script>
+</body>
+</html>
